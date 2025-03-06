@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo 75</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #004C21, #00672D, green, #14974D, black);
+            color: black;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Evitar scrollbar */
+            position: relative; /* Posición relativa para las estrellas */
+        }
+
+        /* Estrellas */
+        .estrella {
+            position: absolute;
+            top: -10px; /* Comienza fuera de la vista */
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: caer 10s linear infinite; /* Ajustar la velocidad */
+            z-index: 1; /* Asegurarse de que las estrellas están detrás */
+        }
+
+        @keyframes caer {
+            to {
+                transform: translateY(100vh); /* Caer hasta la parte inferior */
+            }
+        }
+
+        /* Resto del CSS */
+        .titulo, .buscador, #cartonContainer {
+            position: relative; /* Asegurarse de que el contenido esté por encima de las estrellas */
+            z-index: 2; /* Apilar por encima de las estrellas */
+        }
+
+        .titulo {
+            font-size: 68px;
+            font-family: 'cursive', Courier, monospace;
+            margin-bottom: 10px;
+            text-align: center;
+            width: 100%;
+            color: gold;
+            text-shadow: 3px 3px 0 black, -3px -3px 0 black, 
+                         3px -3px 0 white, -3px 3px 0 white,
+                         0 0 20px gold; /* Efecto de resplandor */
+            animation: flotar 4s ease-in-out infinite;
+        }
+        .buscador {
+            margin-bottom: 100px;
+        }
+        .carton {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1px;
+            margin: 15px;
+            width: 300px; /* Aumentar el ancho del cartón */
+            border: 4px solid white;
+            background: linear-gradient(to bottom, red, orange, gold, orange);
+            border-radius: 10px;   
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5); /* Sombra para profundidad */
+            animation: flotar 3s ease-in-out infinite;
+        }
+        .celda {
+            border: 2.5px solid #000;           
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 50px; /* Aumentar la altura de las celdas */
+            font-size: 24px; /* Aumentar el tamaño de la fuente */
+            color: #4A4A4A; /* Color más oscuro */
+            background-color: #FFD94D;          
+            border-radius: 5px;   
+            text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.7), 
+                         -1px -1px 2px rgba(255, 255, 255, 0.5); /* Sombra para efecto 3D */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Sombra adicional */
+        }
+        .celda-free {
+            background-color: gold;
+        }
+        .letra {
+            border: 2px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px; /* Aumentar la altura de la celda de letra */
+            color: white;
+            font-size: 24px; /* Aumentar el tamaño de la fuente de la letra */
+            background: linear-gradient(to bottom, red, orange, gold);
+            background-color: orange;
+            text-shadow: 3px 3px 0 black, -3px -3px 0 black, 
+                         3px -3px 0 white, -3px 3px 0 white,
+                         0 0 15px rgba(255, 215, 0, 0.8); /* Resplandor */
+        }
+        .encabezado {
+            font-size: 50px;
+            text-align: center;
+            color: #BEBEBE;
+            text-shadow: 3px 3px 0 black, -3px -3px 0 black, 
+                         3px -3px 0 white, -3px 3px 0 white,
+                         0 0 10px rgba(190, 190, 190, 0.8); /* Resplandor */
+            margin-bottom: -10px;
+            animation: flotar 3s ease-in-out infinite; /* Animación para el encabezado */
+            font-family: 'cursive', Courier, monospace;
+        }
+
+        @keyframes flotar {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="titulo">El Sueño Dorado</div>
+
+<div class="buscador">
+    <input type="number" id="numeroBuscar" placeholder="Buscar cartón" />
+    <button onclick="mostrarCarton()">Buscar</button>
+</div>
+
+<div id="cartonContainer"></div>
+
+<script>
+    // Cargar cartones desde localStorage
+    const cartonesExistentes = JSON.parse(localStorage.getItem('cartonesBingo')) || [];
+
+    function mostrarCarton() {
+        const numeroBuscar = document.getElementById('numeroBuscar').value;
+        const index = parseInt(numeroBuscar) - 1;
+
+        const cartonContainer = document.getElementById('cartonContainer');
+        cartonContainer.innerHTML = ''; // Limpiar el contenedor
+
+        if (index >= 0 && index < cartonesExistentes.length) {
+            const carton = cartonesExistentes[index];
+
+            // Crear el encabezado con el número del cartón
+            const encabezado = document.createElement('div');
+            encabezado.className = 'encabezado';
+            encabezado.textContent = `Cartón. N°   ${numeroBuscar}`;
+            cartonContainer.appendChild(encabezado); // Añadir encabezado al contenedor
+
+            const divCarton = document.createElement('div');
+            divCarton.className = 'carton';
+
+            // Crear la fila de letras BINGO
+            ['B', 'I', 'N', 'G', 'O'].forEach(letra => {
+                const letraDiv = document.createElement('div');
+                letraDiv.className = 'letra';
+                letraDiv.textContent = letra;
+                divCarton.appendChild(letraDiv);
+            });
+
+            // Crear la estructura de celdas para el cartón
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 5; col++) {
+                    const celda = document.createElement('div');
+                    celda.className = 'celda';
+                    celda.textContent = carton[col][row]; // Usar la estructura correcta
+
+                    if (carton[col][row] === 'Free') {
+                        celda.classList.add('celda-free');
+                    }
+
+                    divCarton.appendChild(celda);
+                }
+            }
+            cartonContainer.appendChild(divCarton);
+        } else {
+            cartonContainer.textContent = 'Cartón no encontrado';
+        }
+    }
+
+    // Crear estrellas
+    for (let i = 0; i < 100; i++) { // Aumentar cantidad de estrellas
+        const estrella = document.createElement('div');
+        estrella.className = 'estrella';
+        estrella.style.left = Math.random() * 100 + 'vw'; // Distribuir aleatoriamente en el ancho
+        estrella.style.width = Math.random() * 5 + 5 + 'px'; // Tamaño mayor
+        estrella.style.height = estrella.style.width; // Mantener forma circular
+        estrella.style.animationDelay = Math.random() * 10 + 's'; // Retraso aleatorio
+        document.body.appendChild(estrella);
+    }
+</script>
+
+</body>
+</html>
